@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analista de Grupos Pro</title>
+    <style>
+        :root {
+            --bg: #f8f9fa;
+            --card: #ffffff;
+            --primary: #1a73e8;
+            --text: #202124;
+            --gold: #f29900;
+            --border: #dadce0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        header { text-align: center; margin-bottom: 25px; }
+        header h1 { color: var(--primary); margin: 0; font-size: 1.5rem; }
+        header p { color: #70757a; font-size: 0.9rem; margin: 5px 0 0; }
+
+        .input-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        input {
+            flex: 1;
+            padding: 14px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1.2rem;
+            text-align: center;
+            outline: none;
+        }
+
+        input:focus { border-color: var(--primary); }
+
+        button {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+
+        button:hover { opacity: 0.9; }
+
+        /* AJUSTE DE ESTADO INICIAL: OCULTO */
+        .result-area, .special-filter {
+            display: none; 
+            margin-top: 30px;
+        }
+
+        .total-display {
+            background: #e8f0fe;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 25px;
+            border: 1px solid var(--primary);
+        }
+
+        .section-label {
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #70757a;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .gold-label { color: var(--gold); border-bottom: 1px solid #ffeeba; padding-bottom: 5px; }
+
+        .filter-grid {
+            background: #fffcf4;
+            border: 1px solid #ffeeba;
+            padding: 15px;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .f-item { text-align: center; }
+        .f-item div { font-size: 0.7rem; color: var(--gold); margin-bottom: 5px; }
+        .f-item b { font-size: 1.3rem; display: block; }
+
+        .item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .val-g { font-weight: bold; color: var(--primary); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Analista de Grupos Pro</h1>
+        <p>Conversor de dezenas e análise de resultados</p>
+    </header>
+
+    <div class="input-group">
+        <input type="number" id="v1" value="166">
+        <span style="font-weight:bold">×</span>
+        <input type="number" id="v2" value="2026">
+    </div>
+
+    <button onclick="processar()">PROCESSAR ANÁLISE</button>
+
+    <section id="saida" class="result-area">
+        <div class="section-label">Resultado do Cálculo</div>
+        <div id="nTotal" class="total-display"></div>
+
+        <div id="blocoEspecial" class="special-filter">
+            <div class="section-label gold-label">Filtro de 6 Números (Dezenas Fixas)</div>
+            <div id="gridF" class="filter-grid"></div>
+        </div>
+
+        <div class="section-label">Análise de Pares (Sobreposição)</div>
+        <div id="listaPares"></div>
+    </section>
+</div>
+
+<script>
+const BICHOS = {1:"Avestruz",2:"Águia",3:"Burro",4:"Borboleta",5:"Cachorro",6:"Cabra",7:"Carneiro",8:"Camelo",9:"Cobra",10:"Coelho",11:"Cavalo",12:"Elefante",13:"Galo",14:"Gato",15:"Jacaré",16:"Leão",17:"Macaco",18:"Porco",19:"Pavão",20:"Peru",21:"Touro",22:"Tigre",23:"Urso",24:"Veado",25:"Vaca"};
+
+function getGrupo(ds) {
+    const d = parseInt(ds);
+    if (d >= 1 && d <= 25) return { id: d, n: BICHOS[d] };
+    const c = d === 0 ? 100 : d;
+    const id = Math.ceil(c / 4);
+    return { id: id, n: BICHOS[id] };
+}
+
+function processar() {
+    const v1 = document.getElementById('v1').value;
+    const v2 = document.getElementById('v2').value;
+    if (!v1 || !v2) return;
+
+    const res = (BigInt(v1) * BigInt(v2)).toString();
+    
+    // Exibe a área de resultados
+    document.getElementById('saida').style.display = 'block';
+    document.getElementById('nTotal').innerText = res;
+
+    // Filtro Especial (6 Dígitos)
+    const esp = document.getElementById('blocoEspecial');
+    if (res.length === 6) {
+        esp.style.display = 'block';
+        const d1 = res.substring(0, 2), d2 = res.substring(2, 4), d3 = res.substring(4, 6);
+        const g1 = getGrupo(d1), g2 = getGrupo(d2), g3 = getGrupo(d3);
+        
+        document.getElementById('gridF').innerHTML = `
+            <div class="f-item"><div>PAR 1</div><b>${g1.id.toString().padStart(2,'0')}</b><small>${g1.n}</small></div>
+            <div class="f-item"><div>PAR 2</div><b>${g2.id.toString().padStart(2,'0')}</b><small>${g2.n}</small></div>
+            <div class="f-item"><div>PAR 3</div><b>${g3.id.toString().padStart(2,'0')}</b><small>${g3.n}</small></div>
+        `;
+    } else {
+        esp.style.display = 'none';
+    }
+
+    // Análise de Pares Sobrepostos
+    let htmlPares = "";
+    for (let i = 0; i <= res.length - 2; i++) {
+        const par = res.substring(i, i + 2);
+        const info = getGrupo(par);
+        htmlPares += `<div class="item"><span>Dezena <b>${par}</b></span><span class="val-g">${info.id.toString().padStart(2,'0')} - ${info.n}</span></div>`;
+    }
+    document.getElementById('listaPares').innerHTML = htmlPares;
+}
+</script>
+</body>
+</html>
